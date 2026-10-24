@@ -1,84 +1,152 @@
 # srinath.is-a.dev
 
-A personal log: one hundred things to do, a journal of book notes and memories,
-places visited, and a lab of hobby builds.
+A personal log: one hundred things to do before I'm done, a journal of book
+notes and memories, places visited, and a lab of hobby builds.
 
-Static site, no database, no paid services. Content is Markdown in this repo,
-edited through a browser admin at `/admin/`. Photos live on Cloudinary.
+Static site, no database, no paid services, no vendor lock-in. Content is
+Markdown in this repo, edited through a browser admin at `/admin/`. Photos live
+on Cloudinary.
 
-- **Framework:** Astro 5 (static output, almost no client JavaScript)
-- **Admin:** Sveltia CMS at `/admin/` — commits Markdown straight to this repo
-- **Photos:** Cloudinary free tier
-- **Hosting:** Cloudflare Pages, deployed on every push to `main`
-- **Domain:** `srinath.is-a.dev`, free via the is-a.dev registry
+| | |
+|---|---|
+| **Framework** | Astro 5 — static output, almost no client JavaScript |
+| **Admin** | Sveltia CMS at `/admin/`, commits Markdown straight to this repo |
+| **Photos** | Cloudinary free tier |
+| **Hosting** | Cloudflare Pages, rebuilds on every push to `main` |
+| **Live at** | `life-4th.pages.dev` → `srinath.is-a.dev` once the DNS PR merges |
+| **Repo** | `Srinathsri22/life` |
+
+Total running cost: zero.
 
 ## Running it locally
 
 ```bash
 npm install
-npm run dev      # http://localhost:4321
-npm run build    # output in dist/
+npm run dev              # http://localhost:4321
+npm run dev -- --host    # also reachable from your phone on the same wifi
+npm run build            # output in dist/
 ```
+
+## Where everything lives
+
+```
+src/
+  content.config.ts        schemas — the source of truth for every field
+  content/
+    quests/                the 100-item list
+    journal/               book notes, memories, thoughts, trips
+    places/                travel
+    lab/                   hobby builds
+  layouts/Base.astro       nav, footer, mobile dock, SEO tags, ALL motion JS
+  components/
+    Photo.astro            Cloudinary URL rewriting + srcset
+    Gallery.astro          swipeable strip + full-screen lightbox
+    QuestRow.astro         one row of the list
+    EntryCard.astro        one journal card
+  pages/
+    index.astro            homepage
+    list/                  the list + per-quest pages
+    journal/               index + per-entry pages
+    world/ lab/            travel, hobby builds
+    admin/index.astro      loads the CMS  ← a route, not a static file
+    rss.xml.js             feed
+  styles/global.css        design tokens, reveal primitive, marquee
+public/
+  admin/config.yml         the content model the CMS reads
+  manifest.webmanifest     home-screen install
+```
+
+Design tokens (colours, spacing, fonts) are the `:root` block at the top of
+`src/styles/global.css`. Change them there, not in individual components.
 
 ## Setup, once
 
-### 1. Push to GitHub
+### 1. GitHub
 
-Create a repo called `life` under your account and push this folder to `main`.
-If you name it something else, change `repo:` in `public/admin/config.yml`.
+Repo is `Srinathsri22/life`, branch `main`. The capitalisation of the username
+in `public/admin/config.yml` must match GitHub exactly — the CMS passes that
+string to the API verbatim.
 
-### 2. Deploy on Cloudflare Pages
+### 2. Cloudflare Pages
 
-Cloudflare dashboard → Workers & Pages → Create → Pages → connect the repo.
+Dashboard → Workers & Pages → Create → **Continue to Pages** → connect the repo.
 
 - Framework preset: **Astro**
 - Build command: `npm run build`
 - Output directory: `dist`
 
-Every push to `main` rebuilds the site. Free, no card required.
+Use the **Pages** flow, not the newer Workers flow. Workers custom domains
+require the domain's zone to live in your own Cloudflare account; `is-a.dev`
+doesn't, so only Pages can serve it.
 
-### 3. Get the domain
+### 3. Custom domain
+
+Pages project → **Custom domains** → Set up a domain → `srinath.is-a.dev`.
+
+Do this **before** the is-a.dev PR merges. It will sit pending until the DNS
+exists, which is correct. If Cloudflare hasn't been told to answer for the
+hostname, the merged CNAME resolves to Cloudflare and gets an error page.
+
+### 4. The domain itself
 
 Fork `github.com/is-a-dev/register`, add `domains/srinath.json`:
 
 ```json
 {
-  "owner": { "username": "srinathsri22" },
-  "records": { "CNAME": "<your-project>.pages.dev" }
+  "owner": {
+    "username": "Srinathsri22",
+    "email": "srinathsvsp@gmail.com"
+  },
+  "records": {
+    "CNAME": "life-4th.pages.dev"
+  }
 }
 ```
 
-Open a PR. Once merged, add `srinath.is-a.dev` as a custom domain in your
-Cloudflare Pages project. If `srinath` is taken, pick another name — the file
-name is the subdomain.
+The **filename** is the subdomain. The **CNAME** is where it points — the
+Pages hostname, never the is-a.dev name itself. No `https://`, no trailing dot.
 
-### 4. Cloudinary
+Open the PR **across forks**: base `is-a-dev/register` `main`, head your fork's
+branch. A PR inside your own fork does nothing. Fill their template exactly —
+checkboxes take only `[x]`, lowercase, no spaces, and the HTML comments must
+stay. "Merging is blocked / review required" is normal; only maintainers merge.
 
-Sign up free, then in `public/admin/config.yml` fill in `cloud_name` and
-`api_key` from your dashboard. Both are public values and safe to commit —
-never put the API *secret* in this repo.
+Status: PR #58157, awaiting review.
 
-In Cloudinary, go to Settings → Upload and enable unsigned uploading so the
-admin can upload directly.
+### 5. Cloudinary
 
-### 5. Signing in to the admin
+In `public/admin/config.yml` fill in `cloud_name` and `api_key`. Both are
+public values and safe to commit. **Never commit the API secret.**
 
-The admin is a route on the site itself: `/admin/` locally at
-`http://localhost:4321/admin/`, and `https://srinath.is-a.dev/admin/` once live.
-The page lives at `src/pages/admin/index.astro`; the content model it reads is
-`public/admin/config.yml`.
+Settings → Upload → upload preset:
 
-It talks straight to the GitHub API, so the repo has to exist on GitHub before
-it will load — and editing from localhost still commits for real. There is no
-local sandbox unless you turn on Sveltia's local backend.
+- Signing mode: **Unsigned** — required for browser uploads
+- **Append a unique suffix: on** — otherwise two phone photos both named
+  `IMG_1234.jpg` silently overwrite each other
+- Asset folder: something like `life`, to keep these separate
 
-Sign in with a GitHub personal access token
-(Settings → Developer settings → Personal access tokens → Fine-grained,
-with read/write access to this repo only).
+### 6. Signing in to the admin
 
-You only need the OAuth flow if someone non-technical ever edits the site; in
-that case deploy `sveltia/sveltia-cms-auth` as a free Cloudflare Worker and add
-its URL as `base_url` under `backend:` in the config.
+`/admin/` locally is `http://localhost:4321/admin/`.
+
+**The big button goes to Netlify's OAuth service — don't use it.** It's the
+legacy fallback, it asks for access to all your public and private repos plus
+full personal user data, and it fails with "Not Found" unless you have a
+Netlify account. Use the **personal access token** option on the same screen
+instead.
+
+Create the token at GitHub → Settings → Developer settings → Personal access
+tokens → **Fine-grained**:
+
+- Repository access: **Only select repositories** → `life` (not "All")
+- Permissions → Repository → **Contents: Read and write** (Metadata is automatic)
+- Set an expiry; regenerate and re-paste when it lapses
+
+Copy it immediately — GitHub shows it once. It's revocable in one click.
+
+The admin talks directly to the GitHub API, so **editing from localhost still
+commits for real**. There's no sandbox unless you enable Sveltia's local
+backend.
 
 ## Adding things
 
@@ -86,36 +154,75 @@ Everything is editable at `/admin/`. Under the hood:
 
 | Section | Folder | Notes |
 |---|---|---|
-| The list | `src/content/quests/` | `status` is `cleared`, `active` or `someday`; `progress` drives the bar |
-| Journal | `src/content/journal/` | `kind` is `book`, `memory`, `thought` or `trip` |
-| World | `src/content/places/` | `visited: false` puts it under "still on the list" |
+| The list | `src/content/quests/` | `status` is `cleared`, `active` or `someday`; `progress` drives the bar; `number` orders it |
+| Journal | `src/content/journal/` | `kind` is `book`, `memory`, `thought` or `trip`; `draft: true` hides it |
+| World | `src/content/places/` | `visited: false` moves it to "still on the list" |
 | Lab | `src/content/lab/` | Hobby builds |
 
-Save in the admin → commit → Cloudflare rebuilds → live in about a minute.
+Save in the admin → commits to `main` → Cloudflare rebuilds → live in about a
+minute.
 
-Schemas are enforced in `src/content.config.ts`. If a required field is missing,
-the build fails loudly rather than shipping a broken page.
+Schemas are enforced in `src/content.config.ts`. A missing required field fails
+the build loudly instead of shipping a broken page. Adding a field means
+editing **both** `content.config.ts` (so the build accepts it) and
+`public/admin/config.yml` (so the admin offers it).
 
 ## Photos
 
-Every section takes a main photo plus an unlimited list of extras. In the admin
-the list has an "Add photo" button — add as many as you want, drag to reorder.
+Every section takes a main photo plus an unlimited list of extras — the admin
+list has an "Add photo" button, and they drag to reorder.
 
-On the site they render as a swipeable strip; tapping one opens a full-screen
-viewer you can swipe or arrow through. Cloudinary serves each image in WebP or
-AVIF at the size the device actually needs, so a hundred photos cost you nothing
-in build time and very little in bandwidth.
+They render as a swipeable strip; tapping one opens a full-screen viewer you can
+swipe, arrow-key or Escape out of. `Photo.astro` rewrites Cloudinary URLs with
+`f_auto,q_auto` and a width cap, and serves a 2x srcset, so each device gets
+WebP or AVIF at the size it actually needs. Photos never enter the repo, so
+build times stay flat however many you add.
+
+## Motion
+
+All of it is one script at the bottom of `src/layouts/Base.astro`, re-run after
+every client-side navigation:
+
+- Headline lines rise from behind a mask on load
+- The cleared count ticks up; progress bars draw
+- Sections and rows reveal on scroll, staggered 70ms apart
+- Scroll progress as a line at the top and a ring in the header
+- The photo strip drifts sideways at 0.12× scroll — tune that number to taste
+- Page-to-page view transitions; a CSS marquee between hero and list
+
+Reveals use **IntersectionObserver**, not CSS `animation-timeline`. That matters:
+scroll-driven CSS animations don't run on iOS Safari, so the CSS-only version
+showed no motion at all on iPhone.
+
+Everything switches off under `prefers-reduced-motion`.
 
 ## Analytics
 
-Cloudflare Pages → your project → Analytics → enable **Web Analytics**. Free,
-cookieless, no code to add and nothing to consent to.
+Cloudflare Pages → project → Analytics → enable **Web Analytics**. Free,
+cookieless, no code, nothing to consent to.
 
 ## Mobile
 
-The site is built phone-first: a fixed tab bar sits within thumb reach, taps
-have 44px+ targets, safe-area insets are respected on notched phones, and the
-manifest means you can add it to your home screen and open it like an app.
+Built phone-first: a fixed tab bar within thumb reach, 44px+ tap targets,
+safe-area insets for notched phones, scroll-snapped photo strips, and a
+manifest so it installs to the home screen.
 
-Cross-page transitions, scroll reveals and the count-up on the homepage all
-switch off automatically when the phone is set to reduce motion.
+## Gotchas hit while building this
+
+- **`/admin/` 404s** → the admin must be `src/pages/admin/index.astro`, a real
+  route. As a static file in `public/admin/`, Astro's dev server won't resolve
+  the trailing slash.
+- **Push rejected, "fetch first"** → `git pull --rebase` then push. Happens
+  after editing files in the GitHub web UI.
+- **403 on push** → Windows Credential Manager is sending a different GitHub
+  account. Remove `git:https://github.com` from Generic Credentials and retry.
+- **LF/CRLF warnings on Windows** → harmless.
+
+## Possible next steps
+
+- Fill in real content; placeholder text is still in a few entries
+- `robots.txt` and a sitemap, with `/admin/` excluded from indexing
+- A real interactive map on the World page (needs a mapping library — it would
+  roughly double the site's JavaScript, hence left out)
+- Tag filtering on the journal
+- Per-entry OG images generated at build time
