@@ -7,5 +7,6 @@ note: Probly scrambler 400cc
 clearedOn: ''
 cover: ''
 photos: []
-tags: []
+tags:
+  - Adventure
 ---
