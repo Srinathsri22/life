@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: srinathsri22/life
+  repo: Srinathsri22/life
   branch: main
   # No OAuth app needed: sign in at /admin/ with a GitHub personal access token.
   # If you ever add a non-technical editor, deploy sveltia-cms-auth as a free
