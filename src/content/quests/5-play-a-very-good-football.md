@@ -7,5 +7,6 @@ note: Be satisfied when you come out of the pitch
 clearedOn: ''
 cover: ''
 photos: []
-tags: []
+tags:
+  - Fitness
 ---
