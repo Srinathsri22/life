@@ -1,8 +1,12 @@
 ---
 number: 3
-title: Write down what my first bike actually meant
-status: cleared
-progress: 100
-clearedOn: 2026-10-20
-note: Written up in the journal
+title: Learn a self defense form
+status: someday
+progress: 0
+note: ''
+clearedOn: ''
+cover: ''
+photos: []
+tags:
+  - Fitness
 ---
