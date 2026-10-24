@@ -63,7 +63,16 @@ admin can upload directly.
 
 ### 5. Signing in to the admin
 
-Go to `/admin/` and sign in with a GitHub personal access token
+The admin is a route on the site itself: `/admin/` locally at
+`http://localhost:4321/admin/`, and `https://srinath.is-a.dev/admin/` once live.
+The page lives at `src/pages/admin/index.astro`; the content model it reads is
+`public/admin/config.yml`.
+
+It talks straight to the GitHub API, so the repo has to exist on GitHub before
+it will load — and editing from localhost still commits for real. There is no
+local sandbox unless you turn on Sveltia's local backend.
+
+Sign in with a GitHub personal access token
 (Settings → Developer settings → Personal access tokens → Fine-grained,
 with read/write access to this repo only).
 
