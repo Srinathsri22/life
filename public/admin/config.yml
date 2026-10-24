@@ -14,8 +14,8 @@ public_folder: /uploads
 media_library:
   name: cloudinary
   config:
-    cloud_name: YOUR_CLOUD_NAME
-    api_key: YOUR_PUBLIC_API_KEY
+    cloud_name: wzbyqnpw
+    api_key: 732213679383584
     default_transformations:
       - - fetch_format: auto
           quality: auto
