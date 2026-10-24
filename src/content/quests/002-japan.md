@@ -1,6 +1,12 @@
 ---
 number: 2
-title: Spend two weeks in Japan — trains, temples, convenience-store dinners
+title: Complete a half marathon
 status: someday
 progress: 0
+note: ''
+clearedOn: ''
+cover: ''
+photos: []
+tags:
+  - Fitness
 ---
