@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Not found">
+  <section class="section">
+    <div class="shell">
+      <p class="code mono">404</p>
+      <h1>That page isn't here.</h1>
+      <p class="lede">It may have been renamed, or it never existed. Try <a href="/list/">the list</a> or the <a href="/journal/">journal</a>.</p>
+    </div>
+  </section>
+  <style>
+    .code { color: var(--amber); font-size: 13px; letter-spacing: 0.2em; margin-bottom: 20px; }
+    h1 { font-size: clamp(30px, 5vw, 48px); }
+    .lede { margin-top: 18px; color: var(--ink-dim); }
+  </style>
+</Base>

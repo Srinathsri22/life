@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import QuestRow from '../../components/QuestRow.astro';
+
+const all = (await getCollection('quests')).sort((a, b) => a.data.number - b.data.number);
+const groups = [
+  { key: 'active', heading: 'In progress', items: all.filter((q) => q.data.status === 'active') },
+  { key: 'someday', heading: 'Someday', items: all.filter((q) => q.data.status === 'someday') },
+  { key: 'cleared', heading: 'Cleared', items: all.filter((q) => q.data.status === 'cleared') }
+];
+const cleared = groups[2].items.length;
+---
+<Base title="The list — 100 things" description="The hundred things I want to do, tracked in the open.">
+  <section class="section">
+    <div class="shell">
+      <h1>The list</h1>
+      <p class="lede">{cleared} cleared, {all.length - cleared} to go. Updated whenever something actually happens.</p>
+
+      {groups.map((g) => g.items.length > 0 && (
+        <div class="group">
+          <div class="section-head r"><h2>{g.heading}</h2><span class="spacer"></span><span class="meta mono">{g.items.length}</span></div>
+          <ul class="rows">{g.items.map((q) => <QuestRow {...q.data} slug={q.id} reveal />)}</ul>
+        </div>
+      ))}
+
+      {all.length === 0 && <p class="empty mono">No quests yet. Add the first one at /admin/.</p>}
+    </div>
+  </section>
+  <style>
+    h1 { font-size: clamp(34px, 6vw, 56px); }
+    .lede { margin-top: 18px; color: var(--ink-dim); max-width: 56ch; }
+    .group { margin-top: clamp(40px, 6vw, 72px); }
+    .rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    .empty { font-size: 13px; color: var(--ink-faint); margin-top: 32px; }
+  </style>
+</Base>

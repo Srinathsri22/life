@@ -1,0 +1,93 @@
+backend:
+  name: github
+  repo: srinathsri22/life
+  branch: main
+  # No OAuth app needed: sign in at /admin/ with a GitHub personal access token.
+  # If you ever add a non-technical editor, deploy sveltia-cms-auth as a free
+  # Cloudflare Worker and add: base_url: https://<your-worker>.workers.dev
+
+publish_mode: simple
+media_folder: public/uploads
+public_folder: /uploads
+
+# Photos go to Cloudinary, not the repo. Fill in cloud_name and api_key.
+media_library:
+  name: cloudinary
+  config:
+    cloud_name: YOUR_CLOUD_NAME
+    api_key: YOUR_PUBLIC_API_KEY
+    default_transformations:
+      - - fetch_format: auto
+          quality: auto
+
+collections:
+  - name: quests
+    label: The list
+    label_singular: Quest
+    folder: src/content/quests
+    create: true
+    slug: '{{number}}-{{slug}}'
+    sortable_fields: [number, status]
+    summary: '{{number}} — {{title}}'
+    fields:
+      - { name: number, label: Number, widget: number, value_type: int, min: 1, max: 100 }
+      - { name: title, label: Title, widget: string }
+      - { name: status, label: Status, widget: select, default: someday, options: [cleared, active, someday] }
+      - { name: progress, label: Progress %, widget: number, value_type: int, default: 0, min: 0, max: 100, required: false }
+      - { name: note, label: Note, widget: string, required: false, hint: 'Short line, e.g. "Two down, three to go"' }
+      - { name: clearedOn, label: Cleared on, widget: datetime, date_format: 'YYYY-MM-DD', time_format: false, required: false }
+      - { name: cover, label: Cover photo, widget: image, required: false }
+      - { name: photos, label: Photos, widget: list, field: { name: photo, label: Photo, widget: image }, required: false, hint: 'Add as many as you like' }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: body, label: Notes, widget: markdown, required: false }
+
+  - name: journal
+    label: Journal
+    label_singular: Entry
+    folder: src/content/journal
+    create: true
+    slug: '{{slug}}'
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: kind, label: Kind, widget: select, options: [book, memory, thought, trip] }
+      - { name: date, label: Date, widget: datetime, date_format: 'YYYY-MM-DD', time_format: false }
+      - { name: summary, label: One-line summary, widget: string, required: false }
+      - { name: cover, label: Cover photo, widget: image, required: false }
+      - { name: photos, label: More photos, widget: list, field: { name: photo, label: Photo, widget: image }, required: false }
+      - { name: author, label: Author, widget: string, required: false, hint: 'Books only' }
+      - { name: rating, label: Rating out of 5, widget: number, value_type: int, min: 1, max: 5, required: false }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: draft, label: Draft, widget: boolean, default: false }
+      - { name: body, label: Write-up, widget: markdown }
+
+  - name: places
+    label: World
+    label_singular: Place
+    folder: src/content/places
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { name: name, label: Place, widget: string }
+      - { name: country, label: Country, widget: string }
+      - { name: visited, label: Been there, widget: boolean, default: true }
+      - { name: year, label: Year, widget: number, value_type: int, required: false }
+      - { name: cover, label: Main photo, widget: image, required: false }
+      - { name: photos, label: Photos, widget: list, field: { name: photo, label: Photo, widget: image }, required: false, hint: 'Add as many as you like' }
+      - { name: note, label: Note, widget: string, required: false }
+
+  - name: lab
+    label: Lab
+    label_singular: Build
+    folder: src/content/lab
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: date, label: Date, widget: datetime, date_format: 'YYYY-MM-DD', time_format: false }
+      - { name: summary, label: Summary, widget: string }
+      - { name: cover, label: Photo, widget: image, required: false }
+      - { name: repo, label: Repo URL, widget: string, required: false }
+      - { name: photos, label: Photos, widget: list, field: { name: photo, label: Photo, widget: image }, required: false, hint: 'Add as many as you like' }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: body, label: Write-up, widget: markdown }

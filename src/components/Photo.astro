@@ -1,0 +1,26 @@
+---
+// Renders a Cloudinary image with automatic format + quality and a width cap.
+// `src` is either a full Cloudinary URL or any other absolute URL.
+interface Props { src: string; alt: string; width?: number; ratio?: string; class?: string; loading?: 'lazy' | 'eager'; }
+const { src, alt, width = 900, ratio = '4 / 3', class: cls, loading = 'lazy' } = Astro.props;
+
+function optimise(url: string, w: number) {
+  if (!url.includes('/upload/')) return url;
+  return url.replace('/upload/', `/upload/f_auto,q_auto,c_fill,w_${w}/`);
+}
+const small = optimise(src, Math.round(width / 2));
+const large = optimise(src, width);
+---
+<img
+  src={large}
+  srcset={`${small} ${Math.round(width / 2)}w, ${large} ${width}w`}
+  sizes={`(max-width: 700px) 100vw, ${width}px`}
+  alt={alt}
+  loading={loading}
+  decoding="async"
+  class={cls}
+  style={`aspect-ratio: ${ratio}`}
+/>
+<style>
+  img { display: block; width: 100%; height: auto; object-fit: cover; background: var(--surface); border: 1px solid var(--line); }
+</style>

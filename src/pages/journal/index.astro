@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import EntryCard from '../../components/EntryCard.astro';
+
+const entries = (await getCollection('journal', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Base title="Journal" description="Book notes, memories, trips and stray thoughts.">
+  <section class="section">
+    <div class="shell">
+      <h1>Journal</h1>
+      <p class="lede">Book notes, memories, trips, and the stray thoughts worth keeping.</p>
+      {entries.length === 0
+        ? <p class="empty mono">Nothing written yet.</p>
+        : <div class="grid">{entries.map((e) => (
+            <EntryCard class="r" href={`/journal/${e.id}/`} title={e.data.title} kind={e.data.kind} date={e.data.date} summary={e.data.summary} cover={e.data.cover} count={e.data.photos.length} />
+          ))}</div>}
+    </div>
+  </section>
+  <style>
+    h1 { font-size: clamp(34px, 6vw, 56px); }
+    .lede { margin: 18px 0 44px; color: var(--ink-dim); max-width: 56ch; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .empty { font-size: 13px; color: var(--ink-faint); }
+  </style>
+</Base>

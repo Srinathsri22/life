@@ -1,0 +1,70 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Photo from '../../components/Photo.astro';
+import Gallery from '../../components/Gallery.astro';
+
+const places = await getCollection('places');
+const visited = places.filter((p) => p.data.visited).sort((a, b) => (b.data.year ?? 0) - (a.data.year ?? 0));
+const wanted = places.filter((p) => !p.data.visited);
+const countries = new Set(visited.map((p) => p.data.country));
+---
+<Base title="World — places I've been" description="Every place I've been, and the ones still on the list.">
+  <section class="section">
+    <div class="shell">
+      <h1>Been there</h1>
+      <p class="lede">{visited.length} places across {countries.size} countries. {wanted.length} still waiting.</p>
+
+      {visited.length > 0 && (
+        <div class="grid">
+          {visited.map((p) => (
+            <figure class="place r">
+              {p.data.cover
+                ? <Photo src={p.data.cover} alt={p.data.name} width={520} ratio="4 / 5" />
+                : <div class="placeholder"></div>}
+              <figcaption>
+                <span class="name">{p.data.name}</span>
+                <span class="sub mono">{p.data.country}{p.data.year ? `, ${p.data.year}` : ''}</span>
+                {p.data.note && <span class="note">{p.data.note}</span>}
+                {p.data.photos.length > 0 && <span class="shots mono">{p.data.photos.length + 1} photos</span>}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+
+      {visited.flatMap((p) => p.data.photos).length > 0 && (
+        <div class="all-shots">
+          <div class="section-head"><h2>Everything, in one strip</h2></div>
+          <Gallery photos={visited.flatMap((p) => p.data.photos)} label="All travel photos" />
+        </div>
+      )}
+
+      {wanted.length > 0 && (
+        <div class="wanted">
+          <div class="section-head"><h2>Still on the list</h2></div>
+          <ul class="chips">{wanted.map((p) => <li class="mono">{p.data.name}</li>)}</ul>
+        </div>
+      )}
+
+      {places.length === 0 && <p class="empty mono">No places pinned yet.</p>}
+    </div>
+  </section>
+  <style>
+    h1 { font-size: clamp(34px, 6vw, 56px); }
+    .lede { margin: 18px 0 44px; color: var(--ink-dim); max-width: 56ch; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .place { margin: 0; }
+    .placeholder { aspect-ratio: 4 / 5; background: var(--surface); border: 1px solid var(--line); }
+    figcaption { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; }
+    .name { font-size: 17px; font-weight: 500; }
+    .sub { font-size: 11px; letter-spacing: 0.08em; color: var(--ink-faint); }
+    .note { font-size: 14px; color: var(--ink-dim); margin-top: 4px; }
+    .shots { font-size: 10px; letter-spacing: 0.08em; color: var(--ink-faint); margin-top: 6px; }
+    .all-shots { margin-top: clamp(48px, 7vw, 88px); }
+    .wanted { margin-top: clamp(48px, 7vw, 88px); }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+    .chips li { border: 1px solid var(--line-strong); padding: 9px 14px; font-size: 12px; color: var(--ink-dim); }
+    .empty { font-size: 13px; color: var(--ink-faint); }
+  </style>
+</Base>

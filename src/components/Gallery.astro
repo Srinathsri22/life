@@ -1,0 +1,122 @@
+---
+import Photo from './Photo.astro';
+interface Props { photos: string[]; label?: string; }
+const { photos, label = 'Photos' } = Astro.props;
+const id = 'g' + Math.random().toString(36).slice(2, 8);
+---
+{photos.length > 0 && (
+  <section class="gallery" aria-label={label} data-gallery={id}>
+    <div class="strip" tabindex="0" role="group" aria-label={`${label}, scrollable`}>
+      {photos.map((src, i) => (
+        <button class="slide" type="button" data-index={i} aria-label={`Open photo ${i + 1} of ${photos.length}`}>
+          <Photo src={src} alt="" width={900} ratio="4 / 3" loading={i < 2 ? 'eager' : 'lazy'} />
+        </button>
+      ))}
+    </div>
+    <p class="hint mono">{photos.length} photos — swipe, or tap to enlarge</p>
+
+    <dialog class="lightbox" aria-label="Photo viewer">
+      <button class="close" type="button" aria-label="Close viewer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <button class="nav prev" type="button" aria-label="Previous photo">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <img class="full" alt="" />
+      <button class="nav next" type="button" aria-label="Next photo">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+      <p class="counter mono"></p>
+    </dialog>
+
+    <script type="application/json" class="srcs" set:html={JSON.stringify(photos)}></script>
+  </section>
+)}
+
+<style>
+  .gallery { margin-block: 32px; }
+  .strip {
+    display: grid; grid-auto-flow: column;
+    grid-auto-columns: min(78%, 420px);
+    gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter);
+    padding-inline: var(--gutter); margin-inline: calc(var(--gutter) * -1);
+    padding-bottom: 10px; scrollbar-width: thin;
+  }
+  .strip::-webkit-scrollbar { height: 3px; }
+  .strip::-webkit-scrollbar-thumb { background: var(--line-strong); }
+  .slide { scroll-snap-align: start; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .hint { font-size: 11px; letter-spacing: 0.06em; color: var(--ink-faint); margin-top: 10px; }
+  @media (min-width: 760px) {
+    .strip { grid-auto-columns: 46%; }
+  }
+
+  .lightbox {
+    border: 0; padding: 0; width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+    background: rgba(8,9,11,0.97); color: var(--ink);
+    display: none; place-items: center; grid-template-columns: auto 1fr auto; gap: 8px;
+  }
+  .lightbox[open] { display: grid; }
+  .lightbox::backdrop { background: rgba(8,9,11,0.9); }
+  .full { grid-column: 2; max-width: 100%; max-height: 86vh; object-fit: contain; }
+  .nav, .close {
+    background: rgba(255,255,255,0.06); border: 1px solid var(--line-strong); color: var(--ink);
+    width: 48px; height: 48px; display: grid; place-items: center; cursor: pointer; border-radius: 50%;
+  }
+  .nav:hover, .close:hover { background: rgba(255,255,255,0.12); }
+  .prev { grid-column: 1; margin-left: 10px; }
+  .next { grid-column: 3; margin-right: 10px; }
+  .close { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; }
+  .counter { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; font-size: 12px; color: var(--ink-dim); }
+  @media (max-width: 620px) {
+    .nav { position: fixed; bottom: calc(48px + env(safe-area-inset-bottom, 0px)); }
+    .prev { left: 16px; margin: 0; }
+    .next { right: 16px; margin: 0; }
+    .full { grid-column: 1 / -1; }
+  }
+</style>
+
+<script>
+  function wire(root: Element) {
+    if ((root as HTMLElement).dataset.wired) return;
+    (root as HTMLElement).dataset.wired = '1';
+    const srcs: string[] = JSON.parse(root.querySelector('.srcs')?.textContent || '[]');
+    const dialog = root.querySelector('dialog') as HTMLDialogElement;
+    const img = root.querySelector('.full') as HTMLImageElement;
+    const counter = root.querySelector('.counter') as HTMLElement;
+    let i = 0;
+
+    const big = (url: string) =>
+      url.includes('/upload/') ? url.replace('/upload/', '/upload/f_auto,q_auto,w_1600/') : url;
+
+    function show(n: number) {
+      i = (n + srcs.length) % srcs.length;
+      img.src = big(srcs[i]);
+      counter.textContent = `${i + 1} / ${srcs.length}`;
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('.slide').forEach((b) =>
+      b.addEventListener('click', () => { show(Number(b.dataset.index)); dialog.showModal(); })
+    );
+    root.querySelector('.close')?.addEventListener('click', () => dialog.close());
+    root.querySelector('.prev')?.addEventListener('click', () => show(i - 1));
+    root.querySelector('.next')?.addEventListener('click', () => show(i + 1));
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') show(i + 1);
+      if (e.key === 'ArrowLeft') show(i - 1);
+    });
+
+    // Swipe between photos in the viewer.
+    let x0 = 0;
+    dialog.addEventListener('touchstart', (e) => { x0 = e.changedTouches[0].clientX; }, { passive: true });
+    dialog.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) show(dx < 0 ? i + 1 : i - 1);
+    }, { passive: true });
+  }
+
+  const init = () => document.querySelectorAll('[data-gallery]').forEach(wire);
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>

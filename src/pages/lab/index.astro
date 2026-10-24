@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Photo from '../../components/Photo.astro';
+import Gallery from '../../components/Gallery.astro';
+
+const builds = (await getCollection('lab')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Base title="Lab — things I took apart" description="Hobby builds, hardware experiments and weekend projects.">
+  <section class="section">
+    <div class="shell">
+      <h1>The lab</h1>
+      <p class="lede">Weekend builds and things I took apart to see how they worked. Nothing here is a product.</p>
+
+      {builds.length === 0
+        ? <p class="empty mono">Nothing in the lab yet.</p>
+        : <ul class="list">
+            {builds.map((b) => (
+              <li class="item r">
+                {b.data.cover && <Photo src={b.data.cover} alt="" width={360} ratio="1 / 1" />}
+                <div class="text">
+                  <h2>{b.data.title}</h2>
+                  <p class="summary">{b.data.summary}</p>
+                  <p class="foot mono">
+                    <span>{b.data.date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span>
+                    {b.data.tags.map((t) => <span class="tag">{t}</span>)}
+                    {b.data.repo && <a href={b.data.repo}>Source</a>}
+                  </p>
+                  <Gallery photos={b.data.photos} label={`Photos of ${b.data.title}`} />
+                </div>
+              </li>
+            ))}
+          </ul>}
+    </div>
+  </section>
+  <style>
+    h1 { font-size: clamp(34px, 6vw, 56px); }
+    .lede { margin: 18px 0 44px; color: var(--ink-dim); max-width: 56ch; }
+    .list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    .item { display: flex; flex-wrap: wrap; gap: 24px; padding: 28px 0; border-bottom: 1px solid var(--line); }
+    .item :global(img) { width: 140px; flex: none; }
+    .text { flex: 999 1 280px; min-width: 0; }
+    h2 { font-size: 22px; }
+    .summary { margin-top: 10px; color: var(--ink-dim); max-width: 60ch; font-size: 15px; }
+    .foot { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; font-size: 11px; letter-spacing: 0.06em; color: var(--ink-faint); }
+    .tag { border: 1px solid var(--line-strong); padding: 3px 8px; }
+    .empty { font-size: 13px; color: var(--ink-faint); }
+  </style>
+</Base>

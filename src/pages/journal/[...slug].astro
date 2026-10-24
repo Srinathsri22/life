@@ -1,0 +1,44 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Photo from '../../components/Photo.astro';
+import Gallery from '../../components/Gallery.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('journal', ({ data }) => !data.draft);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const kindLabel = { book: 'Book note', memory: 'Memory', thought: 'Thought', trip: 'Trip' }[d.kind] ?? d.kind;
+const stamp = d.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+---
+<Base title={`${d.title} — Srinath`} description={d.summary} image={d.cover}>
+  <article class="section">
+    <div class="shell">
+      <p class="meta mono"><span class="kind">{kindLabel}</span><span>{stamp}</span>{d.author && <span>{d.author}</span>}</p>
+      <h1>{d.title}</h1>
+      {d.rating && (
+        <p class="rating mono" aria-label={`Rated ${d.rating} out of 5`}>{'★'.repeat(d.rating)}<span class="dim">{'★'.repeat(5 - d.rating)}</span></p>
+      )}
+      {d.cover && <div class="cover"><Photo src={d.cover} alt="" width={1100} ratio="16 / 9" loading="eager" /></div>}
+      <div class="prose"><Content /></div>
+      <Gallery photos={d.photos} label={`Photos from ${d.title}`} />
+      {d.tags.length > 0 && <ul class="tags">{d.tags.map((t) => <li>{t}</li>)}</ul>}
+      <p class="back"><a class="mono" href="/journal/">Back to the journal</a></p>
+    </div>
+  </article>
+  <style>
+    .meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 20px; }
+    .kind { color: var(--amber); }
+    h1 { font-size: clamp(30px, 5vw, 48px); max-width: 20ch; }
+    .rating { margin-top: 16px; color: var(--amber); font-size: 14px; letter-spacing: 2px; }
+    .rating .dim { color: var(--line-strong); }
+    .cover { margin: 40px 0; }
+    .prose { margin-top: 36px; }
+    .tags { margin-top: 32px; }
+    .back { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 13px; }
+  </style>
+</Base>

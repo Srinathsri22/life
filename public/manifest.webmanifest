@@ -1,0 +1,9 @@
+{
+  "name": "Srinath — one hundred things",
+  "short_name": "100 things",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0C0E",
+  "theme_color": "#0B0C0E",
+  "icons": []
+}

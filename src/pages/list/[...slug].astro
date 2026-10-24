@@ -1,0 +1,59 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Gallery from '../../components/Gallery.astro';
+import Photo from '../../components/Photo.astro';
+
+export async function getStaticPaths() {
+  const quests = await getCollection('quests');
+  return quests.map((q) => ({ params: { slug: q.id }, props: { quest: q } }));
+}
+
+const { quest } = Astro.props;
+const { Content } = await render(quest);
+const d = quest.data;
+const label = { cleared: 'cleared', active: 'in progress', someday: 'someday' }[d.status];
+---
+<Base title={`${d.title} — the list`} description={d.note} image={d.cover}>
+  <article class="section">
+    <div class="shell">
+      <p class="crumb mono"><a href="/list/">the-list</a> / {String(d.number).padStart(3, '0')}</p>
+      <h1 class:list={[d.status]}>{d.title}</h1>
+
+      <div class="state">
+        <span class:list={['pill', 'mono', d.status]}>{label}</span>
+        {d.clearedOn && <span class="mono when">Cleared {d.clearedOn.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span>}
+        {d.note && <span class="mono when">{d.note}</span>}
+      </div>
+
+      {d.status === 'active' && d.progress > 0 && (
+        <div class="track" role="img" aria-label={`${d.progress} percent done`}><div class="fill" style={`--target:${d.progress}%`}></div></div>
+      )}
+
+      {d.cover && <div class="cover"><Photo src={d.cover} alt="" width={1100} ratio="16 / 9" loading="eager" /></div>}
+
+      <div class="prose"><Content /></div>
+
+      <Gallery photos={d.photos} label={`Photos for ${d.title}`} />
+
+      <p class="back"><a class="mono" href="/list/">Back to the list</a></p>
+    </div>
+  </article>
+  <style>
+    .crumb { font-size: 11px; letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 18px; }
+    h1 { font-size: clamp(28px, 6vw, 46px); max-width: 20ch; }
+    h1.cleared { text-decoration: line-through; text-decoration-color: var(--amber-dim); color: var(--ink-dim); }
+    .state { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; }
+    .pill { font-size: 10px; letter-spacing: 0.1em; border: 1px solid var(--line-strong); padding: 5px 10px; color: var(--ink-dim); }
+    .pill.cleared { color: var(--green); border-color: var(--green); }
+    .pill.active { color: var(--amber); border-color: var(--amber-dim); }
+    .when { font-size: 11px; color: var(--ink-faint); }
+    .track { height: 4px; background: var(--line-strong); margin-top: 20px; max-width: 420px; overflow: hidden; }
+    .fill { height: 100%; width: var(--target); background: var(--amber); animation: grow 1000ms cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes grow { from { width: 0; } }
+    @media (prefers-reduced-motion: reduce) { .fill { animation: none; } }
+    .cover { margin: 36px 0; }
+    .prose { margin-top: 30px; }
+    .back { margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 13px; }
+  </style>
+</Base>
