@@ -1,6 +1,6 @@
 ---
 number: 3
-title: Learn a self defense form
+title: Learn a combat sports
 status: someday
 progress: 0
 note: ''
