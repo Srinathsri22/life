@@ -1,6 +1,14 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+// Decap writes `null` or '' into the frontmatter for optional fields left blank,
+// instead of omitting the key. Treat both as "not set" before validating.
+const blank = (v: unknown) => (v === null || v === '' ? undefined : v);
+const optString = z.preprocess(blank, z.string().optional());
+const optNumber = z.preprocess(blank, z.number().optional());
+const optDate = z.preprocess(blank, z.coerce.date().optional());
+const list = z.preprocess((v) => (v === null || v === '' ? [] : v), z.array(z.string()).default([]));
+
 const status = z.enum(['cleared', 'active', 'someday']);
 
 const quests = defineCollection({
@@ -8,13 +16,13 @@ const quests = defineCollection({
   schema: z.object({
     number: z.number(),
     title: z.string(),
-    status: status.default('someday'),
-    progress: z.number().min(0).max(100).default(0),
-    note: z.string().optional(),
-    clearedOn: z.coerce.date().optional(),
-    cover: z.string().optional(),
-    photos: z.array(z.string()).default([]),
-    tags: z.array(z.string()).default([])
+    status: z.preprocess(blank, status.default('someday')),
+    progress: z.preprocess(blank, z.number().min(0).max(100).default(0)),
+    note: optString,
+    clearedOn: optDate,
+    cover: optString,
+    photos: list,
+    tags: list
   })
 });
 
@@ -24,13 +32,13 @@ const journal = defineCollection({
     title: z.string(),
     kind: z.enum(['book', 'memory', 'thought', 'trip']),
     date: z.coerce.date(),
-    summary: z.string().optional(),
-    cover: z.string().optional(),
-    photos: z.array(z.string()).default([]),
-    author: z.string().optional(),
-    rating: z.number().min(1).max(5).optional(),
-    tags: z.array(z.string()).default([]),
-    draft: z.boolean().default(false)
+    summary: optString,
+    cover: optString,
+    photos: list,
+    author: optString,
+    rating: z.preprocess(blank, z.number().min(1).max(5).optional()),
+    tags: list,
+    draft: z.preprocess(blank, z.boolean().default(false))
   })
 });
 
@@ -39,11 +47,11 @@ const places = defineCollection({
   schema: z.object({
     name: z.string(),
     country: z.string(),
-    visited: z.boolean().default(true),
-    year: z.number().optional(),
-    cover: z.string().optional(),
-    photos: z.array(z.string()).default([]),
-    note: z.string().optional()
+    visited: z.preprocess(blank, z.boolean().default(true)),
+    year: optNumber,
+    cover: optString,
+    photos: list,
+    note: optString
   })
 });
 
@@ -53,10 +61,10 @@ const lab = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     summary: z.string(),
-    cover: z.string().optional(),
-    repo: z.string().optional(),
-    photos: z.array(z.string()).default([]),
-    tags: z.array(z.string()).default([])
+    cover: optString,
+    repo: optString,
+    photos: list,
+    tags: list
   })
 });
 

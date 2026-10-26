@@ -35,7 +35,7 @@ collections:
       - { name: status, label: Status, widget: select, default: someday, options: [cleared, active, someday] }
       - { name: progress, label: Progress %, widget: number, value_type: int, default: 0, min: 0, max: 100, required: false }
       - { name: note, label: Note, widget: string, required: false, hint: 'Short line, e.g. "Two down, three to go"' }
-      - { name: clearedOn, label: Cleared on, widget: datetime, date_format: 'YYYY-MM-DD', time_format: false, required: false }
+      - - { name: clearedOn, label: Cleared on, widget: datetime, date_format: 'YYYY-MM-DD', time_format: false, required: false, condition: { field: status, value: cleared } }
       - { name: cover, label: Cover photo, widget: image, required: false }
       - { name: photos, label: Photos, widget: list, field: { name: photo, label: Photo, widget: image }, required: false, hint: 'Add as many as you like' }
       - { name: tags, label: Tags, widget: list, required: false }
