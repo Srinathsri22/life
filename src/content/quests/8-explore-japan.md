@@ -7,5 +7,6 @@ note: Experience the Japanese culture
 clearedOn: ''
 cover: ''
 photos: []
-tags: []
+tags:
+  - Travel
 ---
