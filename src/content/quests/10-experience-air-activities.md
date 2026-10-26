@@ -7,5 +7,6 @@ note: Paragliding, Jumping ropes & jump from airplane
 clearedOn: ''
 cover: ''
 photos: []
-tags: []
+tags:
+  - Adventure
 ---
