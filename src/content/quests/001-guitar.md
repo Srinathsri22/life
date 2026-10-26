@@ -2,7 +2,7 @@
 number: 1
 title: Get visible six packs
 status: someday
-progress: null
+progress: 0
 note: Pretty straightforward right? - visible definitions
 clearedOn: ''
 cover: ''
